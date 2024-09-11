@@ -1,0 +1,7 @@
+services: 
+  my-app:
+    image: "myapplicationdeployments.azurecr.io/my-app"
+    ports:
+      - 8081:8080
+
+
