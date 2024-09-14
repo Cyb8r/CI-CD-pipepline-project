@@ -27,7 +27,7 @@ pipeline {
 
             steps {
                 sh 'docker login ${ACR_URL} -u ${ACR_URL} -p ${ACR_PASSWORD}'
-                sh 'docker push ${ACR_URL}/maven-app:1.0'
+                sh 'docker push ${ACR_URL}/maven-app:6.0'
             }
         }    
         stage("deploy") {
