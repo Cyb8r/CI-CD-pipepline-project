@@ -15,7 +15,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t myapplicationdeployments.azurecr.io/maven-app:6.0'
+                sh 'docker build -t myapplicationdeployments.azurecr.io/maven-app:6.0 .'
             }
         }
 
