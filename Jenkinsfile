@@ -21,7 +21,7 @@ pipeline {
 
         stage('Push Docker Image to Azure Container Registry') {
             steps {
-                sh 'docker push myapplicationdeployments.azurecr.io/maven:6.0'
+                sh 'docker push myapplicationdeployments.azurecr.io/maven-app:6.0'
                 
             }
         }    
