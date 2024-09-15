@@ -26,8 +26,8 @@ pipeline {
             steps {
                 script {
                     echo "Pushing Docker image to ACR..."
-                    withCredentials([usernamePassword(credentialsId: 'myapplicationmyapplicationdeployments.azurecr.io', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh "echo $PASS | docker login myapplicationdeployments.azurecr.io -u $USER --password-stdin"
+                    withCredentials([usernamePassword(credentialsId: 'azure-cr-credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        sh "docker login -u ${USERNAME} -p ${PASSWORD} myapplicationdeployments.azurecr.io --password-stdin"
                         sh 'docker push myapplicationdeployments.azurecr.io/maven-app:6.0'
                     }
                 }
