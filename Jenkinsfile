@@ -22,7 +22,7 @@ pipeline {
         stage('Push Docker Image to Azure Container Registry') {
             steps {
                 script{
-                    withCredentials([usernamePassword(credentialsId:'myapplicationmyapplicationdeployments.azurecr.io', passwordVariable: 'PASS', usernameVariable:'USER'])){
+                    withCredentials([usernamePassword(credentialsId:'myapplicationmyapplicationdeployments.azurecr.io', passwordVariable: 'PASS', usernameVariable:'USER')]){
                         sh "echo $PASS | docker login -u $USER --password-stdin"
                         sh 'docker push myapplicationdeployments.azurecr.io/maven-app:6.0'
                     }
