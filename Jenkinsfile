@@ -20,14 +20,9 @@ pipeline {
         }
 
         stage('Push Docker Image to Azure Container Registry') {
-            environment {
-                ACR_URL = credentials('myapplicationdeployments.azurecr.io').getUsername()
-                ACR_PASSWORD = credentials('myapplicationdeployments.azurecr.io').getPassword()
-            }
-
             steps {
-                sh 'docker login ${ACR_URL} -u ${ACR_URL} -p ${ACR_PASSWORD}'
-                sh 'docker push ${ACR_URL}/maven-app:6.0'
+                sh 'docker push myapplicationdeployments.azurecr.io/maven:6.0'
+                
             }
         }    
         stage("deploy") {
