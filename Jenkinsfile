@@ -17,16 +17,19 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image..."
-                    sh 'docker build -t myapplicationdeployments.azurecr.io/maven-app:6.0 .'
+                    // Define a variable for the Docker image name
+                    def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0'
+                    sh "docker build -t ${dockerImage} ."
                 }
             }
         }
 
-        stage('scanning docker image'){
+        stage('Scan Docker Image'){
             steps {
                 script {
-                    echo 'scanning docker images.....'
-                    sh "trivy image --exit-code 1 --severity HIGH, critical ${dockerImage.id}"
+                    echo 'Scanning Docker image...'
+                    def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0' // Use the same image name
+                    sh "trivy image --exit-code 1 --severity high,critical ${dockerImage}"
                 }
             }  
         }
@@ -36,8 +39,9 @@ pipeline {
                 script {
                     echo "Pushing Docker image to ACR..."
                     withCredentials([usernamePassword(credentialsId: 'azure-cr-credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0' // Use the same image name
                         sh "docker login -u ${USERNAME} -p ${PASSWORD} myapplicationdeployments.azurecr.io"
-                        sh 'docker push myapplicationdeployments.azurecr.io/maven-app:6.0'
+                        sh "docker push ${dockerImage}"
                     }
                 }
             }
