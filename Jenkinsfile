@@ -22,11 +22,11 @@ pipeline {
             }
         }
 
-        stage{
-            steps{
+        stage('scanning docker image'){
+            steps {
                 script {
                     echo 'scanning docker images.....'
-                    sh 'trivy image --exit-code 1 --severity HIGH, critical ${dockerImage.id}'
+                    sh "trivy image --exit-code 1 --severity HIGH, critical ${dockerImage.id}"
                 }
             }  
         }
