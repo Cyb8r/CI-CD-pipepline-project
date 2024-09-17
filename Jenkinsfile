@@ -22,6 +22,13 @@ pipeline {
             }
         }
 
+        stage{
+            script {
+                echo 'scanning docker images.....'
+                sh 'trivy image --exit-code 1 --severity HIGH, critical ${dockerImage.id}'
+            }
+        }
+
         stage('Push Docker Image to Azure Container Registry') {
             steps {
                 script {
