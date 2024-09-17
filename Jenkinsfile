@@ -27,11 +27,14 @@ pipeline {
             steps {
                 script {
                     echo "Installing Trivy..."
-                    // Install Trivy on the Jenkins agent (for Linux agents)
-                    sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin'
+                    // Install Trivy in the current directory
+                    sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin'
+                    // Add the new location to the PATH for this session
+                    env.PATH = "${env.HOME}/bin:${env.PATH}"
                 }
             }
         }
+
 
         stage('Scan Docker Image') {
             steps {
