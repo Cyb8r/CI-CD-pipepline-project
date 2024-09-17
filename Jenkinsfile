@@ -41,7 +41,7 @@ pipeline {
                 script {
                     echo 'Scanning Docker image...'
                     def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0'
-                    sh "trivy image --exit-code 1 --severity high,critical ${dockerImage}"
+                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${dockerImage}"
                 }
             }
         }
