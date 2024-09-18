@@ -59,6 +59,29 @@ pipeline {
             }
         }
 
+        stage("Install kubectl") {
+            steps {
+                script {
+                    echo "Installing kubectl..."
+                    // Download and install kubectl (for Linux agents)
+                    sh '''
+                        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+                        chmod +x ./kubectl
+                        sudo mv ./kubectl /usr/local/bin/kubectl
+                    '''
+                }
+            }
+        }
+
+        stage("Check Namespace") {
+            steps {
+                script {
+                    echo "Checking Kubernetes namespace..."
+                    sh "kubectl get namespace java-maven"
+                }
+            }
+        }
+
         stage("Deploy application to kubernetes") {
             steps {
                 script{
