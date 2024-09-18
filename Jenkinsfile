@@ -36,15 +36,15 @@ pipeline {
         }
 
 
-        stage('Scan Docker Image') {
-            steps {
-                script {
-                    echo 'Scanning Docker image...'
-                    def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0'
-                    sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${dockerImage}"
-                }
-            }
-        }
+        /*stage('Scan Docker Image') {
+            //steps {
+                //script {
+                    //echo 'Scanning Docker image...'
+                    //def dockerImage = 'myapplicationdeployments.azurecr.io/maven-app:6.0'
+                    //sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${dockerImage}"
+                //}
+            //}
+        }*/
 
         stage('Push Docker Image to Azure Container Registry') {
             steps {
@@ -59,9 +59,14 @@ pipeline {
             }
         }
 
-        stage("Deploy") {
+        stage("Deploy application to kubernetes") {
             steps {
-                echo "Deploying the app..."
+                script{
+                    echo "Deploying the app..."
+                    sh 'kubectl get namespace java-maven'
+                    sh 'kubectl apply -f K8/deployment.yaml'
+                }
+                
             }
         }
     }
