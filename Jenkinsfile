@@ -1,5 +1,8 @@
 pipeline {
     agent any
+     environment {
+        KUBECONFIG = '~/.kube/config' // Specify the correct path to your Minikube kubeconfig file
+    }
     tools {
         maven 'maven-app'
     }
