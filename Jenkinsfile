@@ -86,7 +86,6 @@ pipeline {
             steps {
                 script{
                     echo "Deploying the app..."
-                    sh 'kubectl get namespace java-maven'
                     sh 'kubectl apply -f K8/deployment.yaml'
                 }
                 
