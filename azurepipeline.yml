@@ -1,4 +1,5 @@
-triggers: []
+trigger: 
+- main
 
 pool: NEW_POOL
 
