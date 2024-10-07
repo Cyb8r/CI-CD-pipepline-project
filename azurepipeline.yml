@@ -7,28 +7,28 @@ variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt' # Specify the correct path to your kubeconfig file
 
 stages:
-- stage: Build Jar
-  displayName: "Build Jar"
+- stage: BuildJar
+  displayName: 'Build Jar'
   jobs: 
-  - job: Build Jar
+  - job: BuildJar
     steps: 
-    - task: Maven@3 
+    - task: Maven@3
       inputs: 
         mavenPomFile: 'pom.xml'
         goals: 'package'
-    displayName: 'build the app'
-- stage: Build docker image
-  displayName: "Build docker image"
+      displayName: 'build the app'
+- stage: BuildDockerImage
+  displayName: 'Build docker image'
   jobs: 
-  - job: Build Image 
+  - job: BuildImage 
     steps: 
     - script: |
         echo "Building Docker image..."
         dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
         docker build -t $dockerImage . 
-    displayName: "build docker image"
-- stage: Install Trivy
-  displayName: "Install Trivy"
+      displayName: "build docker image"
+- stage: InstallTrivy
+  displayName: 'Install Trivy'
   jobs:
   - job: InstallTrivy
     steps:
@@ -36,21 +36,21 @@ stages:
         echo "Installing Trivy..."
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
         echo "Trivy installed"
-    displayName: "Install Trivy"
-- stage: Scan Docker image
-  displayName: "Scan Docker image"
+      displayName: 'Install Trivy'
+- stage: ScanDockerImage
+  displayName: 'Scan Docker image'
   jobs: 
-  - job: Scan Docker Image
+  - job: ScanDockerImage
     steps: 
     - script: |
        echo "Scanning Docker image..."
        dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
        $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $dockerImage
-    displayName: "Scan Docker Image"
-- stage: Push docker image to ACR 
-  displayName: "Push docker image to ACR"
+      displayName: 'Scan Docker Image'
+- stage: PushDockerImageToACR 
+  displayName: 'Push docker image to ACR'
   jobs:
-  - job: push docker image to ACR 
+  - job: PushDockerImageToACR 
     steps:
     - task: Docker@2
       inputs:
@@ -58,14 +58,14 @@ stages:
         repository: 'myapplicationdeployments.azurecr.io/maven-app'
         command: 'push'
         tags: '8.0'
-      displayName: "Push Docker image to ACR"
+      displayName: 'Push Docker image to ACR'
 - stage: Deploy_To_Kubernetes
-  displayName: "Deploy Application to Kubernetes"
+  displayName: 'Deploy Application to Kubernetes'
   jobs:
   - job: DeployApp
     steps:
     - script: |
         echo "Deploying the app to Kubernetes..."
         $HOME/bin/kubectl apply -f K8/deployment.yaml
-    displayName: "Deploy Application"
+      displayName: 'Deploy Application'
 
