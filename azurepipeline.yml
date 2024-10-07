@@ -5,6 +5,10 @@ pool: NEW_POOL
 
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt' # Specify the correct path to your kubeconfig file
+  dockerRegistoryServiceConnection: 'ACR_MSI'
+  imageRepository: 'myapplicationdeployments.azurecr.io/maven-app'
+  dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
 
 stages:
 - stage: BuildJar
@@ -22,11 +26,9 @@ stages:
   jobs: 
   - job: BuildImage 
     steps: 
-    - script: |
-        echo "Building Docker image..."
-        dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
-        docker build -t $dockerImage . 
-      displayName: "build docker image"
+    - task: DockerInstaller@0
+      inputs: 
+        dockerVersion: '17.09.0-ce'
 - stage: InstallTrivy
   displayName: 'Install Trivy'
   jobs:
