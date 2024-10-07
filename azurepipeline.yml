@@ -3,7 +3,7 @@ triggers: []
 pool: NEW_POOL
 
 variables:
-  KUBECONFIG: '~/.kube/config' # Specify the correct path to your kubeconfig file
+  KUBECONFIG: 'home/dev-test/kubeconfig.txt' # Specify the correct path to your kubeconfig file
 
 stages:
 - stage: Build Jar
