@@ -2,6 +2,9 @@ triggers: []
 
 pool: NEW_POOL
 
+variables:
+  KUBECONFIG: '~/.kube/config' # Specify the correct path to your kubeconfig file
+
 stages:
 - stage: Build Jar
   displayName: "Build Jar"
@@ -32,7 +35,7 @@ stages:
         echo "Installing Trivy..."
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
         echo "Trivy installed"
-      displayName: "Install Trivy"
+    displayName: "Install Trivy"
 - stage: Scan Docker image
   displayName: "Scan Docker image"
   jobs: 
