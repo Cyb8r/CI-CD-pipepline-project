@@ -1,0 +1,67 @@
+triggers: []
+
+pool: NEW_POOL
+
+stages:
+- stage: Build Jar
+  displayName: "Build Jar"
+  jobs: 
+  - job: Build Jar
+    steps: 
+    - task: Maven@3 
+      inputs: 
+        mavenPomFile: 'pom.xml'
+        goals: 'package'
+      displayName: 'buid the app'
+- stage: Build docker docke r image
+  displayName: "Build docker image"
+  jobs: 
+  - job: Build Image 
+    steps: 
+    - script: |
+        echo "Building Docker image..."
+        dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
+        docker build -t $dockerImage . 
+    displayName: "build docker image"
+- stage: Install Trivvy
+  displayName: "Install Trivy"
+  jobs:
+  - job: InstallTrivy
+    steps:
+    - script: |
+        echo "Installing Trivy..."
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
+        echo "Trivy installed"
+      displayName: "Install Trivy"
+- stage: Scan Docker image
+  displayName: "Scan Docker image"
+  jobs: 
+  - job: Scan Docker Image
+    steps: 
+    - script: |
+       echo "Scanning Docker image..."
+       dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
+       $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $dockerImage
+    displayName: "Scan Docker Image"
+- stage: Push docker image to ACR 
+  displayName: "Push docker image to ACR"
+  jobs:
+  - job: push docker image to ACR 
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'AzureContainerRegistryServiceConnection' # Use your ACR service connection
+        repository: 'myapplicationdeployments.azurecr.io/maven-app'
+        command: 'push'
+        tags: '8.0'
+      displayName: "Push Docker image to ACR"
+- stage: Deploy_To_Kubernetes
+  displayName: "Deploy Application to Kubernetes"
+  jobs:
+  - job: DeployApp
+    steps:
+    - script: |
+        echo "Deploying the app to Kubernetes..."
+        $HOME/bin/kubectl apply -f K8/deployment.yaml
+    displayName: "Deploy Application"
+
