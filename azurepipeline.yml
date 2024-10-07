@@ -16,8 +16,8 @@ stages:
       inputs: 
         mavenPomFile: 'pom.xml'
         goals: 'package'
-      displayName: 'buid the app'
-- stage: Build docker docke r image
+    displayName: 'build the app'
+- stage: Build docker image
   displayName: "Build docker image"
   jobs: 
   - job: Build Image 
@@ -27,7 +27,7 @@ stages:
         dockerImage="myapplicationdeployments.azurecr.io/maven-app:6.0"
         docker build -t $dockerImage . 
     displayName: "build docker image"
-- stage: Install Trivvy
+- stage: Install Trivy
   displayName: "Install Trivy"
   jobs:
   - job: InstallTrivy
