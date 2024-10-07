@@ -16,8 +16,14 @@ stages:
   jobs: 
   - job: BuildJar
     steps: 
-    - task: Maven@3
-      inputs: 
+    - task: Maven@4
+      inputs:
+        azureSubscription: 'MSDN Platforms Subscription(8d350286-edf6-4a53-b8f7-cfcc76ef61e1)'
         mavenPomFile: 'pom.xml'
-        goals: 'package'
-      displayName: 'build the app'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        mavenVersionOption: 'Default'
+        mavenAuthenticateFeed: false
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: false
