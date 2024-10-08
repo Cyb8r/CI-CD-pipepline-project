@@ -39,7 +39,8 @@ stages:
         - task: Docker@2
           displayName: Build Docker Image 
           inputs: 
-           command: build
+           command: buildAndPush
+           containerRegistry: $(dockerRegistryServiceConnection)
            Dockerfile: $(dockerFilePath) # Correct casing of dockerFilePath variable
            repository: $(imageRepository)
            tags: |
@@ -72,21 +73,21 @@ stages:
               $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $imageName
           displayName: Scanned Image
 
-- stage: PushToACR
-  displayName: 'Push to Azure Container Registry'
-  dependsOn: 
-  - InstallTrivy
-  - ScanDockerImage
-  - BuildImage
-  condition: succeeded('BuildImage')
-  jobs:
-    - job: PushToACR # Corrected job name
-      steps:
-        - task: Docker@2
-          displayName: Push Image to ACR
-          inputs:
-            command: push
-            containerRegistry: $(dockerRegistryServiceConnection) # Corrected registry reference
-            repository: $(imageRepository) # Include repository
-            tags: |
-              $(tag) # Include the tag for pushing
+#- stage: PushToACR
+  #displayName: 'Push to Azure Container Registry'
+  #dependsOn: 
+  #- InstallTrivy
+  #- ScanDockerImage
+  #- BuildImage
+  #condition: succeeded('BuildImage')
+  #jobs:
+    #- job: PushToACR # Corrected job name
+      #steps:
+        #- task: Docker@2
+          #displayName: Push Image to ACR
+          #inputs:
+            #command: push
+            #containerRegistry: $(dockerRegistryServiceConnection) # Corrected registry reference
+            #repository: $(imageRepository) # Include repository
+            #tags: |
+              #$(tag) # Include the tag for pushing
