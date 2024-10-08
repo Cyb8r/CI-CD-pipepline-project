@@ -1,18 +1,21 @@
-trigger: 
+trigger:
 - main
 
 pool: NEW_POOL
 
 variables:
-  KUBECONFIG: 'home/dev-test/kubeconfig.txt' # Specify the correct path to your kubeconfig file
-  dockerRegistryServiceConnection: 'ACR_MSI' # Correcting registry variable name
+  KUBECONFIG: 'home/dev-test/kubeconfig.txt'
+  dockerRegistryServiceConnection: 'ACR_MSI'
   imageRepository: 'myapplicationdeployments.azurecr.io/newmavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
 
 stages:
+
+# Build Jar Stage
 - stage: BuildJar
   displayName: 'Build Jar'
+  condition: not(eq(variables['BuildJarCompleted'], 'true')) # Skip if BuildJar has already been run
   jobs: 
   - job: BuildJar
     steps: 
@@ -27,67 +30,106 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
+    - script: echo "##vso[task.setvariable variable=BuildJarCompleted]true" # Mark BuildJar as completed
 
+# Build Docker Image Stage
 - stage: BuildImage
-  displayName: 'Build Image'
+  displayName: 'Build Docker Image'
+  condition: |
+    and(
+      succeeded(), 
+      not(eq(variables['BuildImageCompleted'], 'true')), 
+      eq(variables['BuildJarCompleted'], 'true')    
+    )
   jobs:
     - job: BuildImage
       steps:
         - task: DockerInstaller@0
           inputs:
             dockerVersion: '17.09.0-ce'
-        - task: Docker@2
-          displayName: Build Docker Image 
-          inputs: 
-           command: buildAndPush
-           containerRegistry: $(dockerRegistryServiceConnection)
-           Dockerfile: $(dockerFilePath) # Correct casing of dockerFilePath variable
-           repository: $(imageRepository)
-           tags: |
-             $(tag) 
+        
+        # Check if the image already exists in the Azure Container Registry (ACR)
+        - script: |
+              echo Checking if the image $(imageRepository):$(tag) exists...
+              az acr repository show-tags --name $(dockerRegistryServiceConnection) --repository $(imageRepository) --query "[?@ == '$(tag)']" | grep $(tag)
+          displayName: Check if image exists in ACR
+          condition: failed() # Skip BuildImage if the image already exists
 
+        - task: Docker@2
+          displayName: Build and Push Docker Image
+          inputs:
+            command: buildAndPush
+            containerRegistry: $(dockerRegistryServiceConnection)
+            Dockerfile: $(dockerFilePath)
+            repository: $(imageRepository)
+            tags: |
+              $(tag)
+
+        - script: echo "##vso[task.setvariable variable=BuildImageCompleted]true" # Mark BuildImage as completed
+
+# Install Trivy Stage
 - stage: InstallTrivy
   displayName: 'Install Trivy'
-  dependsOn: BuildImage
+  condition: |
+    and(
+      succeeded(), 
+      not(eq(variables['TrivyInstalled'], 'true'))
+    )
   jobs:
-    - job: 
+    - job:
       steps:
+        # Check if Trivy is already installed
         - script: |
-              echo Installing Trivy
+              echo Checking if Trivy is already installed...
+              if command -v trivy &> /dev/null; then
+                echo "Trivy is already installed. Skipping installation."
+                exit 0
+              fi
+          displayName: Check if Trivy is installed
+          condition: failed() # Skip InstallTrivy if already installed
+        
+        - script: |
+              echo Installing Trivy...
               curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
-              echo Trivy Installed
+              echo Trivy Installed.
           displayName: Install Trivy
+        - script: echo "##vso[task.setvariable variable=TrivyInstalled]true" # Mark Trivy as installed
 
+# Scan Docker Image Stage
 - stage: ScanDockerImage
   displayName: 'Scan Docker Image with Trivy'
-  dependsOn: 
-  - InstallTrivy
-  - BuildImage # Ensure image is built before scanning
-  condition: succeeded('BuildImage')
+  condition: |
+    and(
+      succeeded(), 
+      eq(variables['BuildImageCompleted'], 'true'), 
+      eq(variables['TrivyInstalled'], 'true')  
+    )
   jobs: 
     - job: ScanDockerImage
       steps:
         - script: |
-              echo Scanning Docker Image
+              echo Scanning Docker Image...
               imageName=$(imageRepository):$(tag)
               $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $imageName
-          displayName: Scanned Image
+          displayName: Scan Docker Image
 
-#- stage: PushToACR
-  #displayName: 'Push to Azure Container Registry'
-  #dependsOn: 
-  #- InstallTrivy
-  #- ScanDockerImage
-  #- BuildImage
-  #condition: succeeded('BuildImage')
-  #jobs:
-    #- job: PushToACR # Corrected job name
-      #steps:
-        #- task: Docker@2
-          #displayName: Push Image to ACR
-          #inputs:
-            #command: push
-            #containerRegistry: $(dockerRegistryServiceConnection) # Corrected registry reference
-            #repository: $(imageRepository) # Include repository
-            #tags: |
-              #$(tag) # Include the tag for pushing
+# Push Image to ACR Stage
+- stage: PushToACR
+  displayName: 'Push to Azure Container Registry'
+  condition: |
+    and(
+      succeeded(), 
+      eq(variables['BuildImageCompleted'], 'true'), 
+      eq(variables['TrivyInstalled'], 'true')  
+    )
+  jobs:
+    - job: PushToACR
+      steps:
+        - task: Docker@2
+          displayName: Push Image to ACR
+          inputs:
+            command: push
+            containerRegistry: $(dockerRegistryServiceConnection)
+            repository: $(imageRepository)
+            tags: |
+              $(tag)
