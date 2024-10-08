@@ -42,7 +42,7 @@ stages:
            command: build
            Dockerfile: $(dockerFilePath) # Correct casing of dockerFilePath variable
            tags: |
-             $(imageRepository):$(tag) # Ensure repository and tag are correctly referenced
+             $(tag) # Ensure repository and tag are correctly referenced
 
 - stage: InstallTrivy
   displayName: 'Install Trivy'
