@@ -27,3 +27,39 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
+- stage: BuildImage
+  displayName: 'Build Image'
+  jobs:
+    - job: BuildImage
+      steps:
+        - task: DockerInstaller@0
+          inputs:
+            dockerVersion: '17.09.0-ce'
+        - task: Docker@2
+          displayName: Build image 
+          inputs: 
+           command: build
+           Dockerfile: $(dockerfilePath)
+           tags: |
+             $(tag) 
+- stage: InstallTrivy
+  displayName: Install Trivy
+  jobs:
+    - job: 
+      steps:
+        - script: |
+              echo Installing Trivy
+              curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
+              echo Trivy Installed
+          displayName: Install Trivy
+- stage: ScanDockerImage
+  displayName: Scan Docker imGe with Trivy
+  jobs: 
+    - job: ScanDockerImage
+      steps:
+        - script: |
+              echo Scanning Docker Image
+              $(dockerFilePath)$(tag)
+              $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $dockerImage
+          displayName: Scanned Image
+    
