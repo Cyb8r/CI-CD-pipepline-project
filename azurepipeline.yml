@@ -46,6 +46,7 @@ stages:
 
 - stage: InstallTrivy
   displayName: 'Install Trivy'
+  dependsOn: BuildImage
   jobs:
     - job: 
       steps:
@@ -57,7 +58,9 @@ stages:
 
 - stage: ScanDockerImage
   displayName: 'Scan Docker Image with Trivy'
-  dependsOn: BuildImage # Ensure image is built before scanning
+  dependsOn: 
+  - InstallTrivy
+  - BuildImage # Ensure image is built before scanning
   condition: succeeded('BuildImage')
   jobs: 
     - job: ScanDockerImage
@@ -70,7 +73,10 @@ stages:
 
 - stage: PushToACR
   displayName: 'Push to Azure Container Registry'
-  dependsOn: BuildImage
+  dependsOn: 
+  - InstallTrivy
+  - ScanDockerImage
+  - BuildImage
   condition: succeeded('BuildImage')
   jobs:
     - job: PushToACR # Corrected job name
