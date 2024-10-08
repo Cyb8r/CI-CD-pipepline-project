@@ -6,7 +6,7 @@ pool: NEW_POOL
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt' # Specify the correct path to your kubeconfig file
   dockerRegistryServiceConnection: 'ACR_MSI' # Correcting registry variable name
-  imageRepository: 'myapplicationdeployments.azurecr.io/maven-app'
+  imageRepository: 'NewMavenApp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
 
