@@ -59,7 +59,7 @@ stages:
       steps:
         - script: |
               echo Scanning Docker Image
-              $(dockerFilePath)$(tag)
-              $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $(dockerFilePath)$(tag)
+              imageName=$(imageRepository):$(tag)
+              $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $imageName
           displayName: Scanned Image
     
