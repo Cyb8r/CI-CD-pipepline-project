@@ -41,6 +41,7 @@ stages:
           inputs: 
            command: build
            Dockerfile: $(dockerFilePath) # Correct casing of dockerFilePath variable
+           repository: $(imageRepository)
            tags: |
              $(tag) # Ensure repository and tag are correctly referenced
 
