@@ -60,6 +60,6 @@ stages:
         - script: |
               echo Scanning Docker Image
               $(dockerFilePath)$(tag)
-              $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $dockerImage
+              $HOME/bin/trivy image --exit-code 1 --severity HIGH,CRITICAL $(dockerFilePath)$(tag)
           displayName: Scanned Image
     
