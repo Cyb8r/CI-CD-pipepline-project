@@ -44,7 +44,7 @@ stages:
            Dockerfile: $(dockerFilePath) # Correct casing of dockerFilePath variable
            repository: $(imageRepository)
            tags: |
-             $(tag) # Ensure repository and tag are correctly referenced
+             $(tag) 
 
 - stage: InstallTrivy
   displayName: 'Install Trivy'
