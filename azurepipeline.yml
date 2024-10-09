@@ -9,6 +9,8 @@ variables:
   imageRepository: 'myapplicationdeployments.azurecr.io/newmavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
+  KubernetesServiceConnection: 'AKS_MSI'
+  namespace: 'mave-napp'
 
 stages:
 
