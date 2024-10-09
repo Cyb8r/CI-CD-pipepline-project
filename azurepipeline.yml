@@ -137,6 +137,7 @@ stages:
               $(tag)
 - stage: DeployImageToKubernetes
   displayName: Kubectl apply 
+  isSkippable: false
   jobs:
   - job: 
     steps:
