@@ -144,6 +144,8 @@ stages:
   jobs:
   - job: 
     steps:
+     # Ensure repo is checked out
+        - checkout: self # This will ensure the current repository is pulled
         - task: Kubernetes@1
           displayName: Deploy to kubernetes
           inputs: 
