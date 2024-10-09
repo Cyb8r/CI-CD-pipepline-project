@@ -135,9 +135,12 @@ stages:
             repository: $(imageRepository)
             tags: |
               $(tag)
+
+# Deploy to k8s
 - stage: DeployImageToKubernetes
   displayName: Kubectl apply 
   isSkippable: false
+  condition: always()
   jobs:
   - job: 
     steps:
