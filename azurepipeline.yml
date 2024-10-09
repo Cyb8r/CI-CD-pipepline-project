@@ -133,3 +133,19 @@ stages:
             repository: $(imageRepository)
             tags: |
               $(tag)
+- stage: DeployImageToKubernetes
+  displayName: Kubectl apply 
+  jobs:
+  - job: 
+    steps:
+        - task: Kubernetes@1
+          displayName: Deploy to kubernetes
+          inputs: 
+           connectionType: Kubernetes Service Connection
+           kubernetesServiceEndpoint: $(KubernetesServiceConnection)
+           command: apply
+           arguments: -f k8/deployment.yaml
+           namespace: $(namespace)
+
+
+
