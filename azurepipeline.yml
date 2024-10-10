@@ -152,7 +152,7 @@ stages:
            connectionType: Kubernetes Service Connection
            kubernetesServiceEndpoint: $(KubernetesServiceConnection)
            command: apply
-           arguments: -f k8/deployment.yaml
+           arguments: -f $HOME/CI-CD-pipline-project/k8/deployment.yaml
            namespace: $(namespace)
 
 
