@@ -100,12 +100,7 @@ stages:
 # Scan Docker Image Stage
 - stage: ScanDockerImage
   displayName: 'Scan Docker Image with Trivy'
-  condition: |
-    and(
-      succeeded(), 
-      eq(variables['BuildImageCompleted'], 'true'), 
-      eq(variables['TrivyInstalled'], 'true')  
-    )
+  condition:  always()  
   jobs: 
     - job: ScanDockerImage
       steps:
