@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: my-app-container
-        image: myapplication.azurecr.io/newmavenapp
+        image: myapplication.azurecr.io/newmavenapp:latest
         ports:
         - containerPort: 80
