@@ -1,7 +1,7 @@
 trigger:
 - main
 
-pool: NEW_POOL
+pool: Latets-pool
 
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt'
@@ -10,7 +10,7 @@ variables:
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
   KubernetesServiceConnection: 'AKS_MSI'
-  namespace: 'mave-napp'
+  namespace: 'maven-app'
 
 stages:
 
