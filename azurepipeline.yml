@@ -1,7 +1,7 @@
 trigger:
 - main
 
-pool: Latets-pool
+pool: DEV_TEST
 
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt'
