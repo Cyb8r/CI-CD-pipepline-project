@@ -44,7 +44,6 @@ stages:
             dockerVersion: '17.09.0-ce'
         
         # Check if the image already exists in the Azure Container Registry (ACR)
-
         - task: Docker@2
           displayName: Build and Push Docker Image
           inputs:
@@ -62,16 +61,6 @@ stages:
   jobs:
     - job:
       steps:
-        # Check if Trivy is already installed
-        - script: |
-              echo Checking if Trivy is already installed...
-              if command -v trivy &> /dev/null; then
-                echo "Trivy is already installed. Skipping installation."
-                exit 0
-              fi
-          displayName: Check if Trivy is installed
-          condition: failed() # Skip InstallTrivy if already installed
-        
         - script: |
               echo Installing Trivy...
               curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
