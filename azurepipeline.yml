@@ -17,7 +17,6 @@ stages:
 # Build Jar Stage
 - stage: BuildJar
   displayName: 'Build Jar'
-  condition: not(eq(variables['BuildJarCompleted'], 'true')) # Skip if BuildJar has already been run
   jobs: 
   - job: BuildJar
     steps: 
@@ -32,17 +31,11 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
-    - script: echo "##vso[task.setvariable variable=BuildJarCompleted]true" # Mark BuildJar as completed
+  
 
 # Build Docker Image Stage
 - stage: BuildImage
   displayName: 'Build Docker Image'
-  condition: |
-    and(
-      succeeded(), 
-      not(eq(variables['BuildImageCompleted'], 'true')), 
-      eq(variables['BuildJarCompleted'], 'true')    
-    )
   jobs:
     - job: BuildImage
       steps:
@@ -51,11 +44,6 @@ stages:
             dockerVersion: '17.09.0-ce'
         
         # Check if the image already exists in the Azure Container Registry (ACR)
-        - script: |
-              echo Checking if the image $(imageRepository):$(tag) exists...
-              az acr repository show-tags --name $(dockerRegistryServiceConnection) --repository $(imageRepository) --query "[?@ == '$(tag)']" | grep $(tag)
-          displayName: Check if image exists in ACR
-          condition: failed() # Skip BuildImage if the image already exists
 
         - task: Docker@2
           displayName: Build and Push Docker Image
@@ -67,16 +55,10 @@ stages:
             tags: |
               $(tag)
 
-        - script: echo "##vso[task.setvariable variable=BuildImageCompleted]true" # Mark BuildImage as completed
 
 # Install Trivy Stage
 - stage: InstallTrivy
   displayName: 'Install Trivy'
-  condition: |
-    and(
-      succeeded(), 
-      not(eq(variables['TrivyInstalled'], 'true'))
-    )
   jobs:
     - job:
       steps:
@@ -113,12 +95,6 @@ stages:
 # Push Image to ACR Stage
 - stage: PushToACR
   displayName: 'Push to Azure Container Registry'
-  condition: |
-    and(
-      succeeded(), 
-      eq(variables['BuildImageCompleted'], 'true'), 
-      eq(variables['TrivyInstalled'], 'true')  
-    )
   jobs:
     - job: PushToACR
       steps:
@@ -134,8 +110,6 @@ stages:
 # Deploy to k8s
 - stage: DeployImageToKubernetes
   displayName: Kubectl apply 
-  isSkippable: false
-  condition: always()
   jobs:
   - job: 
     steps:
