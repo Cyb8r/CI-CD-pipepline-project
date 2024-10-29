@@ -6,9 +6,9 @@ pool: DEV_TEST
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt'
   dockerRegistryServiceConnection: 'ACR_MSI'
-  imageRepository: 'myapplication.azurecr.io/mavenapp'
+  imageRepository: 'mavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  tag: '$(Build.BuildId)'
+  tag: '$(latest)'
   KubernetesServiceConnection: 'AKS_MSI'
   namespace: 'maven-app'
 
