@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: my-app-container
-        image: myapplication.azurecr.io/myapplication.azurecr.io/mavenapp:91
+        image: mavenapp:96
         ports:
         - containerPort: 80
