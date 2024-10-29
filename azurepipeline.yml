@@ -8,7 +8,7 @@ variables:
   dockerRegistryServiceConnection: 'ACR_MSI'
   imageRepository: 'mavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  tag: '$(latest)'
+  tag: '$(Build.BuildId)'
   KubernetesServiceConnection: 'AKS_MSI'
   namespace: 'maven-app'
 
