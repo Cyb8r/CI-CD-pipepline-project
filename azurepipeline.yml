@@ -6,7 +6,7 @@ pool: DEV_TEST
 variables:
   KUBECONFIG: 'home/dev-test/kubeconfig.txt'
   dockerRegistryServiceConnection: 'ACR_MSI'
-  imageRepository: 'myapplicationdeployments.azurecr.io/newmavenapp'
+  imageRepository: 'myapplication.azurecr.io/mavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
   KubernetesServiceConnection: 'AKS_MSI'
@@ -82,19 +82,19 @@ stages:
           displayName: Scan Docker Image
 
 # Push Image to ACR Stage
-- stage: PushToACR
-  displayName: 'Push to Azure Container Registry'
-  jobs:
-    - job: PushToACR
-      steps:
-        - task: Docker@2
-          displayName: Push Image to ACR
-          inputs:
-            command: push
-            containerRegistry: $(dockerRegistryServiceConnection)
-            repository: $(imageRepository)
-            tags: |
-              $(tag)
+#- stage: PushToACR
+  #displayName: 'Push to Azure Container Registry'
+  #jobs:
+    #- job: PushToACR
+      #steps:
+        #- task: Docker@2
+          #displayName: Push Image to ACR
+          #inputs:
+            #command: push
+            #containerRegistry: $(dockerRegistryServiceConnection)
+            #repository: $(imageRepository)
+            #tags: |
+              #$(tag)
 
 # Deploy to k8s
 - stage: DeployImageToKubernetes
