@@ -4,7 +4,6 @@ trigger:
 pool: DEV_TEST
 
 variables:
-  KUBECONFIG: 'home/dev-test/kubeconfig.txt'
   dockerRegistryServiceConnection: 'ACR_MSI'
   imageRepository: 'mavenapp'
   dockerFilePath: '$(Build.SourcesDirectory)/Dockerfile'
@@ -17,6 +16,7 @@ stages:
 # Build Jar Stage
 - stage: BuildJar
   displayName: 'Build Jar'
+  condition: not(eq(variables['BuildJarCompleted'], 'true')) # Skip if BuildJar has already been run
   jobs: 
   - job: BuildJar
     steps: 
@@ -31,11 +31,19 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
+    - script: echo "##vso[task.setvariable variable=BuildJarCompleted]true"  # Mark BuildJar as completed
+
   
 
 # Build Docker Image Stage
 - stage: BuildImage
   displayName: 'Build Docker Image'
+  condition: |
+    and(
+      succeeded(), 
+      not(eq(variables['BuildImageCompleted'], 'true')), 
+      eq(variables['BuildJarCompleted'], 'true')    
+    )
   jobs:
     - job: BuildImage
       steps:
@@ -44,6 +52,11 @@ stages:
             dockerVersion: '17.09.0-ce'
         
         # Check if the image already exists in the Azure Container Registry (ACR)
+        - script: |
+              echo Checking if the image $(imageRepository):$(tag) exists...
+              az acr repository show-tags --name $(dockerRegistryServiceConnection) --repository $(imageRepository) --query "[?@ == '$(tag)']" | grep $(tag)
+          displayName: Check if image exists in ACR
+          condition: failed() # Skip BuildImage if the image already exists
         - task: Docker@2
           displayName: Build and Push Docker Image
           inputs:
@@ -53,11 +66,17 @@ stages:
             repository: $(imageRepository)
             tags: |
               $(tag)
+        - script: echo "##vso[task.setvariable variable=BuildImageCompleted]true" # Mark BuildImage as completed
 
 
 # Install Trivy Stage
 - stage: InstallTrivy
   displayName: 'Install Trivy'
+  condition: |
+    and(
+      succeeded(), 
+      not(eq(variables['TrivyInstalled'], 'true'))
+    )
   jobs:
     - job:
       steps:
@@ -71,7 +90,12 @@ stages:
 # Scan Docker Image Stage
 - stage: ScanDockerImage
   displayName: 'Scan Docker Image with Trivy'
-  condition:  always()  
+  condition: |
+    and(
+      succeeded(), 
+      eq(variables['BuildImageCompleted'], 'true'), 
+      eq(variables['TrivyInstalled'], 'true')  
+    )  
   jobs: 
     - job: ScanDockerImage
       steps:
@@ -113,6 +137,19 @@ stages:
            command: apply
            arguments: -f ./K8/deployment.yaml
            namespace: $(namespace)
-
-
-
+        - script: echo "##vso[task.setvariable variable=DeploymentApplied]true"
+          displayName: Mark Deployment as Applied
+  - job: DeployService
+    displayName: 'Apply Service Configuration'
+    dependsOn: DeployDeployment
+    condition: succeeded('DeployDeployment') # Only run if deployment succeeded
+    steps:
+        # Apply Service YAML
+        - task: Kubernetes@1
+          displayName: Apply Ingress
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: $(KubernetesServiceConnection)
+            command: apply
+            arguments: -f ./K8/service.yaml
+            namespace: $(namespace)
