@@ -124,7 +124,7 @@ stages:
 - stage: DeployImageToKubernetes
   displayName: Kubectl apply 
   jobs:
-  - job: 
+  - job: DeployDeployment
     steps:
         - script: |
                 ls -lR     
